@@ -175,7 +175,7 @@ pub async fn search(pool: &DbPool, q: &ListQuery) -> Result<(i64, Vec<Listing>),
     list_query = list_query.bind(limit as i64);
     list_query = list_query.bind(offset as i64);
     let rows = list_query.fetch_all(pool).await?;
-    let items: Result<Vec<Listing>, sqlx::Error> = rows.iter().map(map_listing).collect();
+    let items: Result<Vec<Listing>, sqlx::Error> = rows.into_iter().map(map_listing).collect();
     Ok((total, unique_listings(items?, limit as usize)))
 }
 
@@ -206,7 +206,7 @@ pub async fn latest_by_type(pool: &DbPool, listing_type: &str, limit: i64) -> Re
     .bind(limit * 3)
     .fetch_all(pool)
     .await?;
-    let items: Result<Vec<Listing>, sqlx::Error> = rows.iter().map(map_listing).collect();
+    let items: Result<Vec<Listing>, sqlx::Error> = rows.into_iter().map(map_listing).collect();
     Ok(unique_listings(items?, limit as usize))
 }
 
@@ -219,7 +219,7 @@ pub async fn latest_matching(pool: &DbPool, like: &str, limit: i64) -> Result<Ve
     .bind(limit * 3)
     .fetch_all(pool)
     .await?;
-    let items: Result<Vec<Listing>, sqlx::Error> = rows.iter().map(map_listing).collect();
+    let items: Result<Vec<Listing>, sqlx::Error> = rows.into_iter().map(map_listing).collect();
     Ok(unique_listings(items?, limit as usize))
 }
 
