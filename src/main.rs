@@ -52,10 +52,13 @@ async fn main() {
 
     let frontend_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../frontend/dist");
     let app = api::router(state, frontend_dir);
-    let addr = std::env::var("KAZIBOX_BIND").unwrap_or_else(|_| "127.0.0.1:8080".into());
-    let listener = tokio::net::TcpListener::bind(&addr)
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()
+        .expect("invalid PORT");
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
         .expect("bind http");
-    info!("254jobs API listening on http://{addr}");
+    info!("254jobs API listening on http://0.0.0.0:{port}");
     axum::serve(listener, app).await.expect("server");
 }
