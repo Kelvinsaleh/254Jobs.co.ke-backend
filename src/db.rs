@@ -1,8 +1,7 @@
 use crate::classify::{classify, is_usable_title};
 use crate::models::{IncomingListing, Listing, ListQuery};
 use sha2::{Digest, Sha256};
-use sqlx::postgres::PgPool;
-use sqlx::PgPoolOptions;
+use sqlx::postgres::{PgPool, PgPoolOptions};
 use sqlx::Row;
 use std::collections::HashSet;
 
@@ -97,7 +96,7 @@ pub async fn upsert(pool: &DbPool, item: &IncomingListing) -> Result<bool, sqlx:
     Ok(result.rows_affected() > 0)
 }
 
-fn map_listing(row: &sqlx::postgres::PgRow) -> Result<Listing, sqlx::Error> {
+fn map_listing(row: sqlx::postgres::PgRow) -> Result<Listing, sqlx::Error> {
     Ok(Listing {
         id: row.try_get(0)?,
         source: row.try_get(1)?,
