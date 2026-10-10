@@ -25,7 +25,7 @@ where
             let fetched = items.len();
             let mut upserted = 0;
             for item in items {
-                match crate::db::upsert(pool, &item) {
+                match crate::db::upsert(pool, &item).await {
                     Ok(_) => upserted += 1,
                     Err(err) => warn!(source = name, error = %err, "upsert failed"),
                 }

@@ -46,26 +46,26 @@ struct Health {
 }
 
 async fn health(State(state): State<AppState>) -> Json<Health> {
-    let listings = db::count_all(&state.pool).unwrap_or(0);
+    let listings = db::count_all(&state.pool).await.unwrap_or(0);
     Json(Health { ok: true, listings })
 }
 
 async fn home(State(state): State<AppState>) -> Result<Json<HomeResponse>, StatusCode> {
-    let featured = db::featured(&state.pool).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let featured = db::featured(&state.pool).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let internships =
-        db::latest_by_type(&state.pool, "internship", 18).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::latest_by_type(&state.pool, "internship", 18).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let attachments =
-        db::latest_by_type(&state.pool, "attachment", 18).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let jobs = db::latest_by_type(&state.pool, "job", 18).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::latest_by_type(&state.pool, "attachment", 18).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let jobs = db::latest_by_type(&state.pool, "job", 18).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let nairobi =
-        db::latest_matching(&state.pool, "Nairobi", 18).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::latest_matching(&state.pool, "Nairobi", 18).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let remote =
-        db::latest_matching(&state.pool, "Remote", 18).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::latest_matching(&state.pool, "Remote", 18).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let stats = Stats {
-        jobs: db::count_type(&state.pool, "job").unwrap_or(0),
-        internships: db::count_type(&state.pool, "internship").unwrap_or(0),
-        attachments: db::count_type(&state.pool, "attachment").unwrap_or(0),
-        total: db::count_all(&state.pool).unwrap_or(0),
+        jobs: db::count_type(&state.pool, "job").await.unwrap_or(0),
+        internships: db::count_type(&state.pool, "internship").await.unwrap_or(0),
+        attachments: db::count_type(&state.pool, "attachment").await.unwrap_or(0),
+        total: db::count_all(&state.pool).await.unwrap_or(0),
     };
     Ok(Json(HomeResponse {
         featured,
@@ -84,7 +84,7 @@ async fn list_listings(
 ) -> Result<Json<ListResponse>, StatusCode> {
     let page = query.page.unwrap_or(1).max(1);
     let limit = query.limit.unwrap_or(24).clamp(1, 100);
-    let (total, items) = db::search(&state.pool, &query).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let (total, items) = db::search(&state.pool, &query).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(Json(ListResponse {
         total,
         page,
@@ -97,7 +97,7 @@ async fn get_listing(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<Listing>, StatusCode> {
-    db::get_by_id(&state.pool, &id)
+    db::get_by_id(&state.pool, &id).await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .map(Json)
         .ok_or(StatusCode::NOT_FOUND)

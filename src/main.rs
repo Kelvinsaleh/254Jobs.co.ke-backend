@@ -19,10 +19,10 @@ async fn main() {
         )
         .init();
 
-    let db_path = std::env::var("KAZIBOX_DB").unwrap_or_else(|_| "kazibox.db".into());
-    let pool = db::open(&db_path).expect("open sqlite");
-    db::init(&pool).expect("init sqlite");
-    if let Ok(n) = db::refresh_types(&pool) {
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = db::open(&database_url).await.expect("open database");
+    db::init(&pool).await.expect("init database");
+    if let Ok(n) = db::refresh_types(&pool).await {
         info!(rows = n, "reclassified stored listings");
     }
 
